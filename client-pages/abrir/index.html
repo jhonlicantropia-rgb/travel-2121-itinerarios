@@ -1,7 +1,20 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer"><title>Tu viaje · Travel 2121</title><style>*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;font:15px/1.7 Arial,sans-serif;color:#072c55;background:#f3f6f9}main{max-width:520px;width:100%;padding:32px;background:#fff;border-top:3px solid #bb8e4a;border-radius:14px;box-shadow:0 16px 50px #072c5510}small{color:#94703b;font-size:11px;letter-spacing:2px}h1{font:32px Georgia,serif;margin:16px 0}button,a{display:inline-block;font:inherit;margin:12px 12px 0 0}button{padding:10px 16px;color:white;background:#072c55;border:0;border-radius:8px;cursor:pointer}a{color:#072c55}[hidden]{display:none!important}</style></head><body><!-- travel2121-direct-viewer:v1 --><main><small>TRAVELCORP2121</small><h1>Tu viaje está aquí.</h1><p id="load-status" role="status" aria-live="polite">Abriendo los detalles de tu próxima experiencia…</p><button id="reload" hidden>Volver a intentar</button><a id="fallback" hidden>Abrir versión alternativa</a></main><script>// The permanent GitHub Pages viewer reads an immutable, atomically committed trip.
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer"><title>Tu viaje · Travel 2121</title><style>*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;font:15px/1.7 Arial,sans-serif;color:#072c55;background:#f3f6f9}main{max-width:520px;width:100%;padding:32px;background:#fff;border-top:3px solid #bb8e4a;border-radius:14px;box-shadow:0 16px 50px #072c5510}small{color:#94703b;font-size:11px;letter-spacing:2px}h1{font:32px Georgia,serif;margin:16px 0}button,a{display:inline-block;font:inherit;margin:12px 12px 0 0}button{padding:10px 16px;color:white;background:#072c55;border:0;border-radius:8px;cursor:pointer}a{color:#072c55}[hidden]{display:none!important}</style></head><body><!-- travel2121-direct-viewer:v2 --><main><small>TRAVELCORP2121</small><h1>Tu viaje está aquí.</h1><p id="load-status" role="status" aria-live="polite">Abriendo los detalles de tu próxima experiencia…</p><button id="reload" hidden>Volver a intentar</button><a id="fallback" hidden>Abrir versión alternativa</a></main><script>// A public document can repeat the same embedded photo many times. Store each
+// data URI once before compression; keep the reconstructed HTML byte-for-byte.
+function packTripBundle(html,hash){
+ let prefix='__TRAVEL2121_ASSET_'+hash.slice(0,16)+'_';while(html.includes(prefix))prefix+='_';
+ const assets=[],indexes=new Map();
+ const template=html.replace(/data:(?:image\/(?:jpeg|png|webp|svg\+xml)|font\/(?:woff2?|ttf));base64,[A-Za-z0-9+/=]+/gi,value=>{let index=indexes.get(value);if(index===undefined){index=assets.length;assets.push(value);indexes.set(value,index);}return prefix+index+'__';});
+ return JSON.stringify({version:1,prefix,assets,html:template});
+}
+function unpackTripBundle(value){
+ if(!value||value.version!==1||!/^__TRAVEL2121_ASSET_[a-f0-9]{16}_+$/.test(value.prefix||'')||!Array.isArray(value.assets)||value.assets.length>500||typeof value.html!=='string'||!value.assets.every(v=>typeof v==='string'&&/^data:(?:image\/(?:jpeg|png|webp|svg\+xml)|font\/(?:woff2?|ttf));base64,[A-Za-z0-9+/=]+$/i.test(v)))throw Error('El documento está incompleto. Vuelve a intentar abrirlo.');
+ return value.html.replace(new RegExp(value.prefix+'(\\d+)__','g'),(_match,index)=>{if(!value.assets[Number(index)])throw Error('No se pudo recuperar una imagen del documento.');return value.assets[Number(index)];});
+}
+
+// The permanent GitHub Pages viewer reads an immutable, atomically committed trip.
 // It does not depend on a new Pages deployment for each document.
 async function loadPublicTrip({fragment,fetchFile,cryptoAPI=crypto,onProgress=()=>{}}){
- const params=new URLSearchParams(fragment.replace(/^#/,'')),id=params.get('viaje'),commit=params.get('commit'),revision=params.get('revision');
+ const params=new URLSearchParams(fragment.replace(/^[#?]/,'')),id=params.get('viaje'),commit=params.get('commit'),revision=params.get('revision');
  if(!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(id||'')||!['commit','revision'].every(key=>/^[a-f0-9]{40}$/.test(params.get(key)||'')))throw Error('El enlace del viaje está incompleto. Solicita a tu asesor que lo copie nuevamente.');
  const base='https://raw.githubusercontent.com/jhonlicantropia-rgb/travel-2121-itinerarios/'+commit+'/client-pages/viajes/'+id+'/';
  const digest=async(algorithm,bytes)=>[...new Uint8Array(await cryptoAPI.subtle.digest(algorithm,bytes))].map(v=>v.toString(16).padStart(2,'0')).join('');
@@ -11,27 +24,33 @@ async function loadPublicTrip({fragment,fetchFile,cryptoAPI=crypto,onProgress=()
  const configText=text.match(/const config=(\{.*?\});document/);
  if(configText){
   const config=JSON.parse(configText[1]);
-  if(!Array.isArray(config.files)||config.files.length>400||!config.files.every(name=>/^payload-v[23]-[a-f0-9]{64}-\d+\.txt$/.test(name))||!/^[a-f0-9]{64}$/.test(config.hash||'')||(!config.files.length&&typeof config.data!=='string'))throw Error('El contenido del viaje no es válido.');
+  if(!Array.isArray(config.files)||config.files.length>400||!config.files.every(name=>/^payload-v[234]-[a-f0-9]{64}-\d+\.txt$/.test(name))||!/^[a-f0-9]{64}$/.test(config.hash||'')||(!config.files.length&&typeof config.data!=='string'))throw Error('El contenido del viaje no es válido.');
   const parts=new Array(config.files.length);let next=0,loaded=0;
   await Promise.all(Array.from({length:Math.min(8,config.files.length)},async()=>{while(next<config.files.length){const index=next++,part=await fetchFile(base+config.files[index],48*1024);if(!/^[A-Za-z0-9+/]*={0,2}$/.test(part))throw Error('No pudimos comprobar una parte del viaje.');parts[index]=part;onProgress(++loaded,parts.length);}}));
   const encoded=config.data||parts.join('');if(encoded.length>20*1024*1024||!/^[A-Za-z0-9+/]*={0,2}$/.test(encoded))throw Error('El contenido del viaje está incompleto.');
   const raw=Uint8Array.from(atob(encoded),v=>v.charCodeAt(0)),data=new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());
-  if(data.length>12*1024*1024+256||await digest('SHA-256',data)!==config.hash)throw Error('No pudimos comprobar el documento completo. Vuelve a intentarlo.');
-  html=new TextDecoder().decode(data);
+  const decoded=new TextDecoder().decode(data),restored=config.format==='travel2121-bundle-v1'?unpackTripBundle(JSON.parse(decoded)):decoded;
+  if(restored.length>12*1024*1024+256||await digest('SHA-256',new TextEncoder().encode(restored))!==config.hash)throw Error('No pudimos comprobar el documento completo. Vuelve a intentarlo.');
+  html=restored;
  }
  if(!/^<!doctype html>/i.test(html)||!html.includes('</html>'))throw Error('El documento del viaje está incompleto.');
  return {html,id};
 }
+function publicTripParameters(search,fragment){const params=new URLSearchParams((search||fragment||'').replace(/^[#?]/,'')),id=params.get('viaje'),revision=params.get('revision');if(!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(id||'')||!/^[a-f0-9]{40}$/.test(revision||''))throw Error('El enlace del viaje está incompleto. Solicita a tu asesor que lo copie nuevamente.');return {id,revision,params};}
 function installPublicTripViewer(){
  const status=document.getElementById('load-status'),retry=document.getElementById('reload'),fallback=document.getElementById('fallback');
  retry.onclick=()=>location.reload();
- const params=new URLSearchParams(location.hash.slice(1)),id=params.get('viaje');
- if(/^[0-9a-f-]{36}$/.test(id||'')){fallback.href='../viajes/'+id+'/';fallback.hidden=false;}
  const fetchFile=async(url,maxBytes)=>{
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
   try{const response=await fetch(url,{credentials:'omit',redirect:'error',signal:controller.signal});if(!response.ok)throw Error('No pudimos abrir el viaje ('+response.status+'). Vuelve a intentarlo.');const text=await response.text();if(new TextEncoder().encode(text).length>maxBytes)throw Error('Una parte del viaje no tiene el tamaño esperado.');return text;}finally{clearTimeout(timer);}
  };
- return loadPublicTrip({fragment:location.hash,fetchFile,onProgress:(done,total)=>{status.textContent='Abriendo tu viaje… '+Math.round(done/total*100)+'%';}}).then(({html})=>{document.open();document.write(html);document.close();}).catch(error=>{status.textContent=error.name==='AbortError'?'La conexión tardó demasiado. Vuelve a intentarlo.':error.message;retry.hidden=false;});
+ return (async()=>{
+  const {id,revision,params}=publicTripParameters(location.search,location.hash),url='https://jhonlicantropia-rgb.github.io/travel-2121-itinerarios/viajes/'+id+'/?v='+revision+'&open='+Date.now();fallback.href=url;fallback.hidden=false;
+  // Existing shared links go straight to the prepared HTML. No crypto, gzip or
+  // dozens of raw.githubusercontent requests are needed for the normal opening.
+  try{const html=await fetchFile(url,12*1024*1024);if(html.includes('<!-- travel2121-rendered:'+revision+' -->')){location.replace(url);return;}}catch{}
+  const result=await loadPublicTrip({fragment:params.toString(),fetchFile,onProgress:(done,total)=>{status.textContent='Abriendo tu viaje… '+Math.round(done/total*100)+'%';}});document.open();document.write(result.html);document.close();
+ })().catch(error=>{status.textContent=error.name==='AbortError'?'La conexión tardó demasiado. Vuelve a intentarlo.':error.message;retry.hidden=false;});
 }
 
 installPublicTripViewer();</script></body></html>
