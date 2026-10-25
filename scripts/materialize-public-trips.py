@@ -61,9 +61,10 @@ def build(source,destination):
     for file in sorted((source/'viajes').glob('*/index.html')):
         index=file.read_bytes();revision=hashlib.sha1(('blob '+str(len(index))+'\0').encode()+index).hexdigest()
         html=decode_document(index,file.parent)
+        publication=re.findall(r'<!-- travel2121-publication:([a-f0-9]{64}) -->',html)
         if not re.match(r'<!doctype html>',html,re.I) or '</html>' not in html:raise ValueError('Incomplete public HTML')
         output=destination/file.relative_to(source);html,total=externalize_assets(html,output.parent)
-        html+='\n<!-- travel2121-rendered:'+revision+' -->\n';output.write_text(html,encoding='utf-8');count+=1;assets+=total;html_bytes+=len(html.encode())
+        html+='\n<!-- travel2121-rendered:'+revision+' -->\n';output.write_text(html,encoding='utf-8');(output.parent/'ready.json').write_text(json.dumps({'schema':1,'status':'ready','id':file.parent.name,'revision':revision,'contentHash':publication[-1] if publication else None}),encoding='utf-8');count+=1;assets+=total;html_bytes+=len(html.encode())
     return {'documents':count,'assets':assets,'html_bytes':html_bytes}
 
 if __name__=='__main__':
